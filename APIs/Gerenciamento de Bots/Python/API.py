@@ -10,7 +10,8 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-bots_directory = os.path.join(os.getcwd(), 'bots')
+bots_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bots')
+bots_running = {}
 
 
 @app.route('/')
@@ -126,7 +127,7 @@ def start_bot(bot_name):
         return jsonify({'error': 'O bot já está em execução'})
 
     try:
-        process = subprocess.Popen(['python', bot_file], cwd=bots_directory)
+        process = subprocess.Popen([sys.executable, bot_file], cwd=bots_directory)
         bots_running[bot_name] = process
         return jsonify({'message': 'Bot iniciado com sucesso'})
     except Exception as e:
@@ -199,8 +200,6 @@ def shutdown():
 
 
 if __name__ == '__main__':
-    bots_running = {}
-
     bot_check_thread = threading.Thread(target=check_running_bots)
     bot_check_thread.start()
 

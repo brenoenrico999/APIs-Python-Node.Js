@@ -12,12 +12,13 @@ Clone este repositório para o seu computador.
 
 Certifique-se de que o Python 3.x esteja instalado. Caso não esteja instalado, baixe-o em https://www.python.org/downloads/ e siga as instruções de instalação para o seu sistema operacional.
 
-Instale as dependências do projeto executando o seguinte comando:
+As dependências desta API podem ser instaladas automaticamente utilizando o script de configuração localizado na raiz do repositório:
 
 ```
-pip install flask flask-cors
-pip install flask
+./setup.sh
 ```
+
+O script executará `pip install -r requirements.txt` dentro deste diretório e também instalará as dependências da API Node.js.
 
 ## Como usar
 
