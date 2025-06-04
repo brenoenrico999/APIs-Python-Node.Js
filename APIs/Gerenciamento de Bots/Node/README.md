@@ -11,11 +11,13 @@ Clone este repositório para o seu computador.
 
 Certifique-se de que o Node.js e npm estejam instalados. Caso não estejam instalados, baixe-os em https://nodejs.org/ e siga as instruções de instalação para o seu sistema operacional.
 
-Instale as dependências do projeto executando o seguinte comando no diretório raiz do projeto:
+Para facilitar, utilize o script de configuração localizado na raiz do repositório:
 
 ```
-npm install
+./setup.sh
 ```
+
+O script executará `npm install` dentro deste diretório e instalará as dependências da API Python.
 
 ## Como usar
 
