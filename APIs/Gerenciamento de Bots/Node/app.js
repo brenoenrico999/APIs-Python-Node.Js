@@ -10,6 +10,39 @@ const bots_running = {};
 app.use(express.json());
 app.use(cors());
 
+function startBot(bot_name) {
+  const bot_file = bot_name + '.py';
+  const bot_path = bots_directory + '/' + bot_file;
+
+  if (!fs.existsSync(bot_path)) {
+    return { error: 'Bot não encontrado' };
+  }
+
+  if (isBotRunning(bot_name)) {
+    return { error: 'O bot já está em execução' };
+  }
+
+  try {
+    const process = childProcess.spawn('python', [bot_file], {
+      cwd: bots_directory,
+    });
+    bots_running[bot_name] = process;
+    return { message: 'Bot iniciado com sucesso' };
+  } catch (err) {
+    return { error: 'Erro ao iniciar o bot', message: err.message };
+  }
+}
+
+function stopBot(bot_name) {
+  if (!isBotRunning(bot_name)) {
+    return { error: 'O bot não está em execução' };
+  }
+  const process = bots_running[bot_name];
+  process.kill();
+  delete bots_running[bot_name];
+  return { message: 'Bot parado com sucesso' };
+}
+
 app.get('/', (req, res) => {
   res.send(`
     <h1>API de Gerenciamento de Bots</h1>
@@ -103,57 +136,24 @@ app.get('/status/:bot_name', (req, res) => {
 });
 
 app.put('/start/:bot_name', (req, res) => {
-  const bot_name = req.params.bot_name;
-  const bot_file = bot_name + '.py';
-  const bot_path = bots_directory + '/' + bot_file;
-
-  if (!fs.existsSync(bot_path)) {
-    return res.json({ error: 'Bot não encontrado' });
-  }
-
-  if (isBotRunning(bot_name)) {
-    return res.json({ error: 'O bot já está em execução' });
-  }
-
-  try {
-    const process = childProcess.spawn('python', [bot_file], {
-      cwd: bots_directory,
-    });
-    bots_running[bot_name] = process;
-    return res.json({ message: 'Bot iniciado com sucesso' });
-  } catch (err) {
-    return res.json({ error: 'Erro ao iniciar o bot', message: err.message });
-  }
+  const result = startBot(req.params.bot_name);
+  res.json(result);
 });
 
 app.put('/stop/:bot_name', (req, res) => {
-  const bot_name = req.params.bot_name;
-
-  if (!isBotRunning(bot_name)) {
-    return res.json({ error: 'O bot não está em execução' });
-  }
-
-  const process = bots_running[bot_name];
-  process.kill();
-  process.on('close', () => {
-    delete bots_running[bot_name];
-    return res.json({ message: 'Bot parado com sucesso' });
-  });
+  const result = stopBot(req.params.bot_name);
+  res.json(result);
 });
 
 app.put('/restart/:bot_name', (req, res) => {
   const bot_name = req.params.bot_name;
-  if (!isBotRunning(bot_name)) {
-    return res.json({ error: 'O bot não está em execução' });
+  stopBot(bot_name);
+  const result = startBot(bot_name);
+  if (result.error) {
+    res.json(result);
+  } else {
+    res.json({ message: 'Bot reiniciado com sucesso' });
   }
-
-  const process = bots_running[bot_name];
-  process.kill();
-  process.on('close', () => {
-    delete bots_running[bot_name];
-    startBot(bot_name);
-    return res.json({ message: 'Bot reiniciado com sucesso' });
-  });
 });
 
 app.get('/management', (req, res) => {
